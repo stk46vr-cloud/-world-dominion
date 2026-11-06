@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WORLD DOMINION — 世界覇権シミュレーター</title>
+<style>
+:root{color-scheme:dark;--bg:#101722;--panel:#192536;--panel2:#202f43;--line:#34465d;--text:#edf3fb;--muted:#a6b5c8;--gold:#e7bd68;--blue:#71b7e8;--red:#e47c78;--green:#83c89b}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#101722,#172438);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+main{max-width:1100px;margin:auto;padding:18px}.hero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.eyebrow{font-size:11px;letter-spacing:.2em;color:var(--gold)}h1{font-size:clamp(24px,5vw,36px);margin:2px 0;font-weight:850;letter-spacing:.03em}.sub{color:var(--muted);font-size:13px}.badge{border:1px solid var(--line);border-radius:99px;padding:7px 12px;color:var(--gold);font-size:13px}
+.panel{background:rgba(25,37,54,.96);border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0;box-shadow:0 8px 24px #0002}.panel h2{font-size:16px;margin:0 0 12px}.grid{display:grid;gap:10px}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.two{grid-template-columns:1.2fr .8fr}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{background:var(--panel2);border-radius:10px;padding:11px}.stat small{display:block;color:var(--muted);font-size:12px}.stat strong{font-size:24px}.stat em{font-style:normal;font-size:11px;color:var(--muted);margin-left:4px}
+button,select{font:inherit;color:var(--text);background:#263950;border:1px solid #49617d;border-radius:9px;padding:10px 12px;min-height:43px}button{cursor:pointer}button:hover{filter:brightness(1.15)}button:disabled{opacity:.4;cursor:not-allowed}.primary{background:#9b7537;border-color:#d3a956;color:#fff}.danger{border-color:#a95454;color:#ffb5ad}.good{border-color:#477c61;color:#b9efc8}.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.actions button{text-align:left}.actions b{display:block}.actions small{color:#b6c4d5;font-size:11px}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.muted{color:var(--muted)}.bar{height:8px;background:#34465d;border-radius:20px;overflow:hidden;margin-top:5px}.bar span{display:block;height:100%;background:var(--blue)}.country-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.country{display:flex;justify-content:space-between;gap:8px;padding:8px 9px;background:#202f43;border-radius:8px;font-size:12px}.country.you{outline:1px solid var(--gold)}.country .name{font-weight:700}.log{max-height:260px;overflow:auto}.event{padding:8px 0;border-bottom:1px solid #34465d;font-size:13px}.event:last-child{border:0}.map{width:100%;height:auto;background:#132338;border:1px solid var(--line);border-radius:10px}.land{fill:#3a526c;stroke:#71879e;stroke-width:1.4}.maplabel{fill:#eaf2fc;font-size:11px;font-weight:700;text-anchor:middle}.mapdot{stroke:#fff;stroke-width:1.5}.mapnote{font-size:11px;color:var(--muted);margin-top:6px}.hidden{display:none!important}.notice{padding:11px;border-radius:9px;background:#293b50;color:#dce9f7;font-size:13px}.select-country{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.select-country button{text-align:left}.select-country button.selected{border-color:var(--gold);background:#4a3c28}.footer{font-size:11px;color:var(--muted);text-align:center;padding:15px}
+@media(max-width:700px){main{padding:12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.select-country{grid-template-columns:repeat(2,minmax(0,1fr))}.country-list{grid-template-columns:1fr}.stat strong{font-size:21px}}
+</style>
+</head>
+<body>
+<main>
+<header class="hero"><div><div class="eyebrow">GLOBAL STRATEGY SIMULATION</div><h1>🌐 WORLD DOMINION</h1><div class="sub">国家を導き、外交・経済・軍事で世界の覇権を握れ。</div></div><div class="badge" id="topDate">2026年 上半期</div></header>
+
+<section class="panel" id="setup">
+<h2>⚑ プレイする国家を選択</h2><p class="muted">12か国から選択。国ごとに国力・技術・安定度が異なる。1ターン＝半年、最大20年間。</p>
+<div class="select-country" id="nationChoices"></div>
+<div class="row" style="margin-top:12px"><div class="notice" id="nationInfo">国家を選んでゲームを開始しよう。</div><button class="primary" id="begin">国家運営を開始 →</button></div>
+</section>
+
+<section id="game" class="hidden">
+<div class="grid stats">
+<div class="stat"><small>GDP</small><strong id="gdp">—</strong><em>兆ドル</em></div>
+<div class="stat"><small>軍事力</small><strong id="mil">—</strong><em>指数</em></div>
+<div class="stat"><small>国庫</small><strong id="cash">—</strong><em>兆ドル</em></div>
+<div class="stat"><small>国際影響力</small><strong id="influence">—</strong><em>pt</em></div>
+</div>
+<div class="panel">
+<div class="row"><div><h2 id="myTitle">国家</h2><div class="muted" id="population"></div></div><div class="muted" id="turnLabel" style="text-align:right">第1ターン</div></div>
+<div class="grid three">
+<div>技術力 <b id="tech">—</b><div class="bar"><span id="techBar"></span></div></div>
+<div>国内安定度 <b id="stability">—</b><div class="bar"><span id="stabBar"></span></div></div>
+<div>領土 <b id="territory">—</b><div class="bar"><span id="territoryBar"></span></div></div>
+</div>
+</div>
+<div class="grid two">
+<div class="panel"><h2>🗺️ 世界勢力図（模式図）</h2>
+<svg class="map" viewBox="0 0 700 300" role="img" aria-label="各地域の勢力を示す模式的な世界地図">
+<path class="land" d="M65 68 L105 36 170 42 204 68 190 103 160 116 145 151 115 142 98 110 70 104Z"/>
+<path class="land" d="M178 155 L213 164 229 205 214 253 190 230 181 194Z"/>
+<path class="land" d="M310 58 L346 39 389 49 401 75 375 94 350 87 330 111 309 94Z"/>
+<path class="land" d="M343 111 L405 104 439 128 426 183 394 211 359 190 335 148Z"/>
+<path class="land" d="M410 53 L477 34 558 53 622 83 604 119 555 126 525 111 480 128 444 103Z"/>
+<path class="land" d="M510 156 L553 150 585 180 572 217 540 229 513 198Z"/>
+<path class="land" d="M608 229 L637 220 651 237 633 253 610 248Z"/>
+<g id="mapMarkers"></g>
+<text x="125" y="22" class="maplabel">北米</text><text x="204" y="282" class="maplabel">南米</text><text x="367" y="24" class="maplabel">欧州</text><text x="390" y="236" class="maplabel">アフリカ</text><text x="535" y="22" class="maplabel">アジア</text><text x="551" y="265" class="maplabel">オセアニア</text>
+</svg><div class="mapnote">※地図は地域配置のイメージ。点の色は各国の勢力圏を示す。</div>
+</div>
+<div class="panel"><h2>🌍 世界ランキング</h2><div id="worldList" class="country-list"></div></div>
+</div>
+<div class="panel">
+<h2>🏛️ 国家運営 — 1ターンに2アクション</h2>
+<div class="actions">
+<button data-act="economy"><b>🏭 経済投資</b><small>費用 0.3兆 / GDP成長</small></button>
+<button data-act="military"><b>🛡️ 軍備増強</b><small>費用 0.4兆 / 軍事力+8</small></button>
+<button data-act="research"><b>🔬 技術研究</b><small>費用 0.25兆 / 技術+5</small></button>
+<button data-act="reform"><b>🏥 国内改革</b><small>費用 0.2兆 / 安定度+9</small></button>
+</div>
+<hr style="border:0;border-top:1px solid var(--line);margin:15px 0">
+<h2>🤝 外交・軍事</h2><div class="row"><label class="muted" for="target">対象国</label><select id="target" aria-label="外交対象国"></select></div>
+<div class="actions" style="margin-top:9px">
+<button data-act="alliance" class="good"><b>🤝 同盟提案</b><small>友好関係を構築</small></button>
+<button data-act="trade"><b>🚢 貿易協定</b><small>双方のGDP成長</small></button>
+<button data-act="pressure"><b>📣 外交圧力</b><small>相手の安定度低下</small></button>
+<button data-act="war" class="danger"><b>⚔️ 宣戦布告</b><small>戦争を開始する</small></button>
+</div>
+<div class="notice" id="actionMessage" aria-live="polite" style="margin-top:12px">国家方針を決定しよう。</div>
+<div class="row" style="margin-top:12px"><div>残りアクション：<b id="moves">2</b></div><button class="primary" id="endTurn">ターン終了・世界を進める →</button></div>
+</div>
+<div class="panel"><h2>📰 世界ニュース</h2><div class="log" id="news" aria-live="polite"></div></div>
+<div class="row"><button id="rules">勝利条件・ルール</button><button id="restart">タイトルへ戻る</button></div>
+<div class="panel hidden" id="ruleBox"><b>勝利条件</b><p class="muted">①国際影響力100到達、または②GDP・軍事力の両方で世界1位。20年経過でゲーム終了し、GDP・軍事力・技術・影響力を総合評価します。戦争は毎ターン自動で進行し、劣勢側の安定度が低下。勝者は相手のGDPの一部と領土を獲得します。同盟国への宣戦は同盟破棄となります。</p><p class="muted">各国の数値はゲーム用の架空モデルで、現実の統計そのものではありません。</p></div>
+</section>
+<div class="footer">WORLD DOMINION · ローカルで動作する簡易国家戦略ゲーム</div>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const seed=[
+{name:'🇺🇸 アメリカ',gdp:30,mil:90,tech:90,stab:78,pop:340,inf:78,land:9,xy:[125,83]},
+{name:'🇨🇳 中国',gdp:19,mil:88,tech:65,stab:82,pop:1410,inf:75,land:9,xy:[548,91]},
+{name:'🇯🇵 日本',gdp:4.2,mil:42,tech:88,stab:90,pop:123,inf:62,land:2,xy:[605,116]},
+{name:'🇩🇪 ドイツ',gdp:4.5,mil:38,tech:90,stab:88,pop:84,inf:60,land:1,xy:[370,76]},
+{name:'🇮🇳 インド',gdp:3.9,mil:55,tech:45,stab:65,pop:1430,inf:72,land:8,xy:[505,142]},
+{name:'🇷🇺 ロシア',gdp:2.2,mil:75,tech:40,stab:72,pop:144,inf:65,land:17,xy:[470,65]},
+{name:'🇬🇧 イギリス',gdp:3.3,mil:35,tech:88,stab:82,pop:68,inf:58,land:1,xy:[349,74]},
+{name:'🇫🇷 フランス',gdp:3.1,mil:38,tech:86,stab:84,pop:66,inf:56,land:1,xy:[362,91]},
+{name:'🇧🇷 ブラジル',gdp:2.2,mil:28,tech:42,stab:76,pop:216,inf:42,land:8,xy:[205,198]},
+{name:'🇹🇷 トルコ',gdp:1.1,mil:32,tech:42,stab:70,pop:85,inf:40,land:1,xy:[410,111]},
+{name:'🇰🇷 韓国',gdp:1.7,mil:30,tech:90,stab:82,pop:52,inf:48,land:1,xy:[588,126]},
+{name:'🇸🇦 サウジアラビア',gdp:1.1,mil:35,tech:48,stab:78,pop:36,inf:44,land:2,xy:[433,151]}
+];
+let nations=[],me='',turn=0,moves=2,alliances=[],wars=[],logs=[],chosen='🇯🇵 日本',finished=false;
+const name=n=>n.name.replace(/^\\S+\\s/,'');
+const p=()=>nations.find(n=>n.name===me);
+const target=()=>nations.find(n=>n.name===$('target').value);
+const f=n=>Number(n).toFixed(1);
+function log(s){logs.unshift(s);logs=logs.slice(14);$('news').innerHTML=logs.map(x=>`<div class="event">• ${x}</div>`).join('')}
+function setup(){ $('nationChoices').innerHTML=seed.map(n=>`<button data-country="${n.name}" class="${chosen===n.name?'selected':''}">${n.name}<br><small class="muted">GDP ${n.gdp}兆 / 軍事 ${n.mil}</small></button>`).join('');$('nationChoices').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{chosen=b.dataset.country;let n=seed.find(x=>x.name===chosen);$('nationInfo').textContent=`${n.name}：GDP ${n.gdp}兆ドル、軍事力${n.mil}、技術${n.tech}。人口${n.pop}百万人。`;setup()}));$('nationInfo').textContent=`${seed.find(n=>n.name===chosen).name}を選択中。開始後も戦略は自由。`}
+function render(){let a=p();$('topDate').textContent=(2026+Math.floor(turn/2))+'年 '+(turn%2?'下半期':'上半期');$('turnLabel').textContent=`第${turn+1}ターン · ${turn+1}/40`;$('gdp').textContent=f(a.gdp);$('mil').textContent=Math.round(a.mil);$('cash').textContent=f(a.cash);$('influence').textContent=Math.round(a.inf);$('myTitle').textContent=a.name+' 政府';$('population').textContent=`人口 ${a.pop.toLocaleString()}百万人 · 領土指数 ${a.land}`;$('tech').textContent=a.tech.toFixed(0)+'/100';$('stability').textContent=a.stab.toFixed(0)+'/100';$('territory').textContent=a.land;$('techBar').style.width=a.tech+'%';$('stabBar').style.width=a.stab+'%';$('territoryBar').style.width=Math.min(100,a.land*5)+'%';$('moves').textContent=moves;$('worldList').innerHTML=[...nations].sort((x,y)=>y.gdp-x.gdp).map(n=>`<div class="country ${n.name===me?'you':''}"><span class="name">${n.name}${n.name===me?' ★':''}${alliances.some(x=>x.includes(n.name)&&x.includes(me))?' 🤝':''}${wars.some(x=>x.includes(n.name)&&x.includes(me))?' ⚔️':''}</span><span>GDP ${f(n.gdp)}</span></div>`).join('');$('mapMarkers').innerHTML=nations.map(n=>`<circle class="mapdot" cx="${n.xy[0]}" cy="${n.xy[1]}" r="${n.name===me?8:5}" fill="${n.name===me?'#e7bd68':wars.some(w=>w.includes(n.name))?'#e47c78':alliances.some(x=>x.includes(n.name)&&x.includes(me))?'#83c89b':'#71b7e8'}"><title>${n.name}</title></circle>`).join('');$('target').innerHTML=nations.filter(n=>n.name!==me).map(n=>`<option value="${n.name}">${n.name}</option>`).join('');document.querySelectorAll('[data-act]').forEach(b=>b.disabled=moves<=0||finished);$('endTurn').disabled=finished}
+function begin(){me=chosen;nations=seed.map(n=>({...n,cash:n.name===chosen?3.0:1.5}));turn=0;moves=2;alliances=[];wars=[];logs=[];finished=false;$('setup').classList.add('hidden');$('game').classList.remove('hidden');log(`${me}が国家運営を開始。世界各国が新政権の動向を注視している。`);render()}
+function action(type){if(moves<=0||finished)return;let a=p(),b=target(),msg='',cost=0;
+if(['economy','military','research','reform'].includes(type)){cost={economy:.3,military:.4,research:.25,reform:.2}[type];if(a.cash<cost){$('actionMessage').textContent='国庫が不足している。貿易やターン収入で資金を確保しよう。';return}a.cash-=cost;if(type==='economy'){a.gdp+=.38;msg='産業・インフラへ投資。GDPが成長した。'}if(type==='military'){a.mil+=8;msg='軍備増強を実施。軍事力が上昇した。'}if(type==='research'){a.tech=Math.min(100,a.tech+5);a.inf+=2;msg='研究開発を推進。技術力と国際的評価が上昇。'}if(type==='reform'){a.stab=Math.min(100,a.stab+9);a.gdp+=.08;msg='教育・医療・行政改革を実施。国内安定度が上昇。'}}
+else if(type==='alliance'){if(alliances.some(x=>x.includes(me)&&x.includes(b.name))){$('actionMessage').textContent='すでに同盟関係にある。';return}let chance=Math.max(.08,Math.min(.9,.42+a.inf/250+a.stab/350-b.mil/500));if(Math.random()<chance){alliances.push([me,b.name]);a.inf+=7;msg=`${b.name}が同盟を受諾！相互防衛関係を樹立。`}else msg=`${b.name}は同盟提案を拒否した。外交交渉は難航。`}
+else if(type==='trade'){a.gdp+=.18;b.gdp+=.12;a.cash+=.15;a.inf+=3;msg=`${b.name}と貿易協定を締結。双方の経済が成長。`}
+else if(type==='pressure'){b.stab=Math.max(10,b.stab-6);a.inf+=2;msg=`${b.name}に外交圧力を行使。相手国内の緊張が高まった。`}
+else if(type==='war'){if(wars.some(x=>x.includes(me)&&x.includes(b.name))){$('actionMessage').textContent='すでに交戦中。ターン終了で戦況が進む。';return}alliances=alliances.filter(x=>!x.includes(me)||!x.includes(b.name));wars.push([me,b.name]);msg=`${b.name}に宣戦布告！国際社会に衝撃が走る。`}
+moves--;log(msg);$('actionMessage').textContent=msg;render()}
+function endTurn(){if(finished)return;let a=p();nations.forEach(n=>{n.gdp*=1+(0.006+n.tech/10000)*(n===a?1.35:1);n.cash+=Math.max(.04,n.gdp*.014);n.stab=Math.max(5,Math.min(100,n.stab+(Math.random()*2.2-.8)));if(n!==a&&Math.random()<.36){let act=Math.floor(Math.random()*3);if(act===0)n.mil+=1.8+Math.random()*2;if(act===1)n.tech=Math.min(100,n.tech+.7);if(act===2)n.inf+=.5}});
+wars.slice().forEach(w=>{let x=nations.find(n=>n.name===w[0]),y=nations.find(n=>n.name===w[1]);if(!x||!y)return;let xp=x.mil*(.65+Math.random()*.7)*(0.7+x.tech/100),yp=y.mil*(.65+Math.random()*.7)*(0.7+y.tech/100);x.mil=Math.max(5,x.mil-2.5);y.mil=Math.max(5,y.mil-2.5);x.cash=Math.max(0,x.cash-.12);y.cash=Math.max(0,y.cash-.12);if(xp>yp*1.18){y.stab=Math.max(5,y.stab-9);x.inf+=4;let loot=Math.min(.25,y.gdp*.025);x.gdp+=loot;y.gdp-=loot;y.land=Math.max(1,y.land-1);x.land+=1;wars=wars.filter(z=>z!==w);log(`${x.name}軍が${y.name}軍を撃破。領土の一部を獲得し、講和を強要！`)}else if(yp>xp*1.18){x.stab=Math.max(5,x.stab-9);y.inf+=4;let loot=Math.min(.2,x.gdp*.02);y.gdp+=loot;x.gdp-=loot;wars=wars.filter(z=>z!==w);log(`${y.name}軍が${x.name}軍を撃退。${x.name}は撤退を余儀なくされた。`)}else log(`${x.name}と${y.name}の戦線は膠着。双方に損害。`)});
+if(Math.random()<.48){let events=[['世界的な景気回復。各国のGDPがわずかに上昇。',()=>nations.forEach(n=>n.gdp*=1.012)],['資源価格が高騰。各国の国庫に影響。',()=>nations.forEach(n=>n.cash=Math.max(0,n.cash-.06))],['技術革新の波。各国の技術力が向上。',()=>nations.forEach(n=>n.tech=Math.min(100,n.tech+1))],['地域紛争の懸念が高まり、各国の安定度が低下。',()=>nations.forEach(n=>n.stab=Math.max(5,n.stab-2))]];let e=events[Math.floor(Math.random()*events.length)];e[1]();log('世界ニュース：'+e[0])}
+turn++;moves=2;log('ターン更新。各国政府が次の戦略を開始。');let richest=[...nations].sort((x,y)=>y.gdp-x.gdp)[0],strongest=[...nations].sort((x,y)=>y.mil-x.mil)[0];if(a.inf>=100||(a.name===richest.name&&a.name===strongest.name)){finish(`${a.name}が世界覇権を確立！`)}else if(turn>=40){let score=n=>n.inf+n.gdp*2+n.mil*.25+n.tech*.3+n.land*1.5;let winner=[...nations].sort((x,y)=>score(y)-score(x))[0];finish(`20年経過。総合国力による覇権国は${winner.name}！`)}render()}
+function finish(msg){finished=true;log('🏆 '+msg);$('actionMessage').textContent='ゲーム終了：'+msg}
+$('begin').addEventListener('click',begin);document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>action(b.dataset.act)));$('endTurn').addEventListener('click',endTurn);$('rules').addEventListener('click',()=>$('ruleBox').classList.toggle('hidden'));$('restart').addEventListener('click',()=>{$('game').classList.add('hidden');$('setup').classList.remove('hidden');setup()});setup();
+})();
+</script>
+</body>
+</html>
